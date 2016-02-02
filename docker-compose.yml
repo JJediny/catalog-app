@@ -4,17 +4,42 @@ app:
    - "80:80"
   environment:
     CKAN_SITE_URL: http://catalog.dev
-    DB_ENV_POSTGRESQL_USER: ckan
-    DB_ENV_POSTGRESQL_PASS: pass
-    DB_ENV_POSTGRESQL_DB: ckan
-    DB_ENV_POSTGRESQL_PYCSW_DB: pycsw
+  volumes:
+   - .src:/test
   links:
    - redis
    - db
    - solr
+   - fgdc2iso
+harvester-fetch-consumer:
+  build: .
+  links:
+   - app
+   - redis
+   - db
+   - solr
+   - fgdc2iso
+  command: fetch-consumer
+harvester-gather-consumer:
+  build: .
+  links:
+   - app
+   - redis
+   - db
+   - solr
+   - fgdc2iso
+  command: gather-consumer
 redis:
   image: redis
 db:
   build: docker/db
+  environment:
+    POSTGRES_USER: postgres
+    DB_CKAN_USER: ckan
+    DB_CKAN_PASSWORD: pass
+    DB_CKAN_DB: ckan
+    DB_PYCSW_DB: pycsw
 solr:
   build: docker/solr
+fgdc2iso:
+  build: docker/fgdc2iso
